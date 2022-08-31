@@ -1,29 +1,29 @@
 package com.pe.ttk.admision.service.impl;
 
-import com.google.gson.Gson;
 import com.pe.ttk.admision.dto.Mensaje;
 import com.pe.ttk.admision.dto.OfertaDto;
 import com.pe.ttk.admision.dto.entity.master.Cargo;
 import com.pe.ttk.admision.dto.entity.master.Encargado;
 import com.pe.ttk.admision.dto.entity.master.Estado;
-import com.pe.ttk.admision.dto.entity.admision.Oferta;
-import com.pe.ttk.admision.repository.CargoRepository;
-import com.pe.ttk.admision.repository.EncargadoRepository;
-import com.pe.ttk.admision.repository.EstadoRepository;
-import com.pe.ttk.admision.repository.OfertaRepository;
-import com.pe.ttk.admision.security.entity.Usuario;
+import com.pe.ttk.admision.dto.entity.admision.OfertaEntity;
+import com.pe.ttk.admision.repository.*;
 import com.pe.ttk.admision.security.entity.UsuarioPrincipal;
 import com.pe.ttk.admision.security.repository.UsuarioRepository;
 import com.pe.ttk.admision.service.OfertaService;
+import com.pe.ttk.admision.util.Constantes;
 import com.pe.ttk.admision.util.ConvertirFechas;
+import com.pe.ttk.admision.util.mapper.OfertaMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -32,6 +32,7 @@ public class OfertaServiceImpl implements OfertaService {
 
     @Autowired
     OfertaRepository ofertaRepository;
+
     @Autowired
     CargoRepository cargoRepository;
 
@@ -44,19 +45,40 @@ public class OfertaServiceImpl implements OfertaService {
     @Autowired
     EstadoRepository estadoRepository;
 
+    @Autowired
+    OfertaMapper ofertaMapper;
+
     ConvertirFechas convertirFechas = new ConvertirFechas();
 
-    public List<Oferta> listarOfertas() {
+    public Page<OfertaDto> listarOfertas(Integer numPagina, Integer tamPagina, String titulo, List estado,
+                                         String fechaPublicacion, List creador) {
 
-        List<Oferta> listaOfertas = ofertaRepository.findAll();
+        Pageable pageable = PageRequest.of(numPagina, tamPagina, Sort.by("fechaPublicacion").descending());
+        List<OfertaEntity> listaOfertas = ofertaRepository.listarOfertas(pageable, titulo, estado, fechaPublicacion, creador, Constantes.ESTADO_ACTIVO);
+        List<OfertaDto> ofertas =listaOfertas.stream().map(ofertaMapper::toOferta)
+                .collect(Collectors.toList());
+        if(!listaOfertas.isEmpty()){
+            return new PageImpl<>(ofertas, pageable, listaOfertas.size());
+        }
 
-        return listaOfertas;
+        return null;
+    }
+
+    @Override
+    public Page<OfertaDto> listarOfertasLanding(Integer numPagina, Integer tamPagina) {
+        Pageable pageable = PageRequest.of(numPagina, tamPagina, Sort.by("fechaPublicacion").descending());
+        List<OfertaEntity> listaOfertas = ofertaRepository.listarOfertasLanding(pageable, Constantes.ESTADO_ACTIVADA, Constantes.ESTADO_ACTIVO);
+        List<OfertaDto> ofertas =listaOfertas.stream().map(ofertaMapper::toOfertaLanding)
+                .collect(Collectors.toList());
+        if(!listaOfertas.isEmpty()){
+            return new PageImpl<>(ofertas, pageable, listaOfertas.size());
+        }
+
+        return null;
     }
 
 
-
-
-    public Mensaje registrarOferta(Oferta oferta, Authentication auth) {
+    public Mensaje registrarOferta(OfertaDto ofertaDto, Authentication auth) {
 
         UsuarioPrincipal usuario = (UsuarioPrincipal) auth.getPrincipal();
 
@@ -71,88 +93,137 @@ public class OfertaServiceImpl implements OfertaService {
         Encargado encargadoDb = encargadoOp.get();
 
         Estado estado = new Estado();
-        estado.setId(1L);
+        estado.setId(Constantes.ESTADO_CREADA);
 
-        oferta.setEstadoOferta(estado);
-        oferta.setCantidadPostulantes(oferta.getCantidadPostulantes());
-        oferta.setCargoOferta(oferta.getCargoOferta());
-        oferta.setCreadorOferta(encargadoDb);
-        oferta.setFechaPublicacion(null);
-        oferta.setFechaCreacion(convertirFechas.stringToDateSql());
-        oferta.setDescripcion(oferta.getDescripcion());
-        oferta.setRequisito(oferta.getRequisito());
-        oferta.setTitulo(oferta.getTitulo());
-        oferta.setFechaActualizacion(null);
-        oferta.setFechaDesactivado(null);
-        ofertaRepository.save(oferta);
+        OfertaEntity ofertaEntity = new OfertaEntity();
+
+        ofertaEntity.setEstadoOferta(estado);
+        ofertaEntity.setCantidadPostulantes(Constantes.CERO);
+        ofertaEntity.setCargoOferta(ofertaDto.getCargoOferta());
+        ofertaEntity.setCreadorOferta(encargadoDb);
+        ofertaEntity.setFechaPublicacion(null);
+        ofertaEntity.setFechaCreacion(convertirFechas.stringToDateSql());
+        ofertaEntity.setDescripcion(ofertaDto.getDescripcion());
+        ofertaEntity.setRequisito(ofertaDto.getRequisito());
+        ofertaEntity.setTitulo(ofertaDto.getTitulo());
+        ofertaEntity.setFechaActualizacion(null);
+        ofertaEntity.setFechaDesactivado(null);
+        ofertaEntity.setEstado(Constantes.ESTADO_ACTIVO);
+        ofertaRepository.save(ofertaEntity);
 
         return new Mensaje(("Oferta creada correctamente"));
     }
 
-    public void actualizarOferta(Long id, OfertaDto ofertaDto) {
+    public Mensaje actualizarOferta(OfertaDto ofertaDto) {
 
-        Long idCargo = ofertaDto.getCargoOferta().getId();
-        Oferta oferta = getOne(id).get();
-        Cargo cargo = cargoRepository.getOne(idCargo);
+        Optional<OfertaEntity> ofertaOp = ofertaRepository.findByIdAndEstado(ofertaDto.getId(), Constantes.ESTADO_ACTIVO);
+        if(ofertaOp.isPresent()){
+            Long idCargo = ofertaDto.getCargoOferta().getId();
+            Optional<Cargo> cargoOp = cargoRepository.findByIdAndEstado(idCargo, Constantes.ESTADO_ACTIVO);
+            if(cargoOp.isEmpty()){
+                return new Mensaje("El cargo no existe");
+            }
 
-        oferta.setTitulo(ofertaDto.getTitulo());
-        oferta.setDescripcion(ofertaDto.getDescripcion());
-        oferta.setRequisito(ofertaDto.getRequisito());
-        oferta.setCargoOferta(cargo);
-        oferta.setFechaActualizacion(convertirFechas.stringToDateSql());
-        ofertaRepository.save(oferta);
+            OfertaEntity ofertaDb = ofertaOp.get();
+            Cargo cargoDb = cargoOp.get();
+
+            ofertaDb.setTitulo(ofertaDto.getTitulo());
+            ofertaDb.setDescripcion(ofertaDto.getDescripcion());
+            ofertaDb.setRequisito(ofertaDto.getRequisito());
+            ofertaDb.setCargoOferta(cargoDb);
+            ofertaDb.setFechaActualizacion(convertirFechas.stringToDateSql());
+            ofertaRepository.save(ofertaDb);
+
+            return new Mensaje("Oferta actualizada correctamente");
+        }
+
+        return new Mensaje("La oferta no existe");
+
     }
 
 
     @Override
-    public void actualizarEstadoOferta(Long id, OfertaDto ofertaDto) {
+    public Mensaje actualizarEstadoOferta(OfertaDto ofertaDto) {
 
-        Long idEstado = ofertaDto.getEstadoOferta().getId();
-        Oferta oferta = getOne(id).get();
-        Estado estado = estadoRepository.getOne(idEstado);
-
-        if (estado.getEstado().equalsIgnoreCase("ACTIVADA")) {
-            oferta.setFechaPublicacion(convertirFechas.stringToDateSql());
-            oferta.setEstadoOferta(estado);
-            ofertaRepository.save(oferta);
-        } else if (estado.getEstado().equalsIgnoreCase("DESACTIVADA")) {
-            oferta.setFechaDesactivado(convertirFechas.stringToDateSql());
-            oferta.setEstadoOferta(estado);
-            ofertaRepository.save(oferta);
-
+        Optional<OfertaEntity> ofertaOp = ofertaRepository.findByIdAndEstado(ofertaDto.getId(), Constantes.ESTADO_ACTIVO);
+        if(ofertaOp.isPresent()){
+            OfertaEntity ofertaDb = ofertaOp.get();
+            Long idEstado = ofertaDto.getEstadoOferta().getId();
+            Optional<Estado> estadoOp = estadoRepository.findById(idEstado);
+            if(estadoOp.isEmpty()){
+                return new Mensaje("No existe el estado");
+            }
+            Estado estadoDb = estadoOp.get();
+            if(Objects.equals(estadoDb.getId(), Constantes.ESTADO_ACTIVADA)){
+                ofertaDb.setFechaPublicacion(convertirFechas.stringToDateSql());
+                ofertaDb.setEstadoOferta(estadoDb);
+                ofertaRepository.save(ofertaDb);
+            }
+            if(Objects.equals(estadoDb.getId(), Constantes.ESTADO_DESACTIVADA)){
+                ofertaDb.setFechaDesactivado(convertirFechas.stringToDateSql());
+                ofertaDb.setEstadoOferta(estadoDb);
+                ofertaRepository.save(ofertaDb);
+            }
+            return  new Mensaje("Estado de la oferta actualizado correctamente");
         }
+
+        return new Mensaje("No existe la oferta");
     }
 
     public void delete(Long id) {
         ofertaRepository.deleteById(id);
     }
 
-    public Optional<Oferta> getOne(Long id) {
+    public Optional<OfertaEntity> getOne(Long id) {
         return ofertaRepository.findById(id);
     }
 
     @Override
-    public List<Oferta> findOfertaByQueryString(String titulo) {
+    public List<OfertaEntity> findOfertaByQueryString(String titulo) {
 
-        return ofertaRepository.findOfertaByQueryString(titulo);
+        return ofertaRepository.findByTitulo(titulo);
     }
 
-    public List<Oferta> findByCreadorOferta(Encargado creador) {
+    public List<OfertaEntity> findByCreadorOferta(Encargado creador) {
 
         return ofertaRepository.findByCreadorOferta(creador);
     }
 
-    public List<Oferta> findByEstadoOferta(Estado estado) {
+    public List<OfertaEntity> findByEstadoOferta(Estado estado) {
 
         return ofertaRepository.findByEstadoOferta(estado);
 
 
     }
 
-    public List<Oferta> findByfechaPublicacion(Date fechaPublicacion) {
+    public List<OfertaEntity> findByfechaPublicacion(Date fechaPublicacion) {
 
         return ofertaRepository.findByfechaPublicacion(fechaPublicacion);
 
 
+    }
+
+    @Override
+    public OfertaDto obtenerOferta(Long id) {
+        Optional<OfertaEntity> ofertaOp = ofertaRepository.findByIdAndEstado(id, Constantes.ESTADO_ACTIVO);
+        if(ofertaOp.isPresent()){
+            OfertaEntity ofertaDb = ofertaOp.get();
+            return ofertaMapper.toOferta(ofertaDb);
+        }
+        return null;
+    }
+
+    @Override
+    public Mensaje eliminarOferta(OfertaDto ofertaDto) {
+        Optional<OfertaEntity> ofertaOp = ofertaRepository.findByIdAndEstado(ofertaDto.getId(), Constantes.ESTADO_ACTIVO);
+        if(ofertaOp.isPresent()){
+            OfertaEntity ofertaDb = ofertaOp.get();
+            ofertaDb.setEstado(Constantes.ESTADO_INACTIVO);
+            ofertaRepository.save(ofertaDb);
+
+            return  new Mensaje("Oferta eliminada correctamente");
+        }
+
+        return new Mensaje("No existe la oferta");
     }
 }

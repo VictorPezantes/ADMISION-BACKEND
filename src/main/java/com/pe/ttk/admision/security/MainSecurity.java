@@ -59,12 +59,13 @@ public class MainSecurity extends WebSecurityConfigurerAdapter{
 	protected void configure(HttpSecurity http) throws Exception {
 		http.cors().and().csrf().disable()
 		.authorizeRequests()
-		.antMatchers("/auth/**",
+		.antMatchers("/api/v1/auth/**",
 				"/v2/api-docs/**",
 				"/email-password/**",
 				"/swagger-ui/**",
 				"/swagger-resources/**",
-				"/configuration/**").permitAll()
+				"/configuration/**",
+				"/api/v1/oferta/listar-landing").permitAll()
 		.anyRequest().authenticated()
 		.and()
 		.exceptionHandling().authenticationEntryPoint(jwtEntryPoint)

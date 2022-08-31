@@ -1,60 +1,54 @@
 package com.pe.ttk.admision.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.*;
 
-import javax.persistence.Column;
-import java.awt.*;
-import java.io.InputStream;
-import java.sql.Date;
+import java.util.Date;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Data
 public class PostulanteDto {
 
+    private Long id;
     private String primerNombre;
     private String segundoNombre;
     private String apellidoPaterno;
     private String apellidoMaterno;
-    private String estadoCivil;
-    private String fechaNacimiento;
-    private String direccionPrincipal;
-    private String distrito;
-    private String provincia;
-    private String departamento;
-    private String celularPrincipal;
+    private Long idEstadoCivil;
+    private String dni;
+    @JsonFormat(pattern = "dd/MM/yyyy")
+    private Date fechaNacimiento;
+    private String direccion;
+    private Long idDistrito;
+    private Long idProvincia;
+    private Long idDepartamento;
+    private String celular;
     private String celularFamiliar;
     private String telefonoFijo;
-    private String emailPrincipal;
+    private String email;
     private String emailSecundario;
     private String profesion;
     private String lugarEstudios;
     private String ultimoCursoRealizado;
     private String empresaCurso;
     private String trabajoReciente;
-    private String fechaIngresoTrabajoReciente;
-    private String fechaSalidaTrabajoreciente;
-    private String EmpresaTrabajoReciente;
+    @JsonFormat(pattern = "dd/MM/yyyy")
+    private Date fechaIngresoTrabajoReciente;
+    @JsonFormat(pattern = "dd/MM/yyyy")
+    private Date fechaSalidaTrabajoReciente;
+    private String empresaTrabajoReciente;
     private String motivoSalidaTrabajoReciente;
-    private String curriculumVitae;
-    private String dniFrontal;
-    private String dniPosterior;
-    private String fotografia;
-    private String respuestaDisponibilidadViajar;
-    private String respuestaExperienciaMantencion;
-    private String estadoPostulacion;
-    private String subEstadoPostulacion;
-    private String fechaPostulacion;
+    private Integer disponibilidadViajar;
+    private Integer experienciaRubro;
+    private Integer estadoPostulacion;
+    @JsonFormat(pattern = "dd/MM/yyyy")
+    private Date fechaPostulacion;
     private String procedencia;
-    private String cargoPostulante;
+    private Long idOferta;
     private String ofertaPostulada;
-    private int cantidadPostulaciones;
-    private String responsableAsignado;
-    private String dni;
-
+    private String urlCurriculumVitae;
+    private String urlDniFrontal;
+    private String urlDniPosterior;
+    private String urlFotografia;
+    private Integer estado;
 
 }

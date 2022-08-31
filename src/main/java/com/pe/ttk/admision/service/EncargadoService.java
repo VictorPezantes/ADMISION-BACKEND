@@ -18,5 +18,5 @@ public interface EncargadoService {
 
     Optional<Encargado> getOne(Long id);
 
-    public boolean existsByEmail(String email);
+    boolean existsByEmail(String email);
 }

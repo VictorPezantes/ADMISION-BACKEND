@@ -12,7 +12,8 @@ import com.pe.ttk.admision.security.enums.RolNombre;
 import com.pe.ttk.admision.security.jwt.JwtProvider;
 import com.pe.ttk.admision.security.service.RolService;
 import com.pe.ttk.admision.security.service.UsuarioService;
-import com.pe.ttk.admision.util.mapper.UsuarioMapper;
+import com.pe.ttk.admision.security.service.impl.RolServiceImpl;
+import com.pe.ttk.admision.security.service.impl.UsuarioServiceImpl;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -36,9 +37,8 @@ import java.text.ParseException;
 import java.util.*;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/v1/auth")
 @CrossOrigin(origins = "http://localhost:4200")
-
 public class AuthController {
 
     private final Path rootFolder = Paths.get("archivos/Empleado");
@@ -53,16 +53,17 @@ public class AuthController {
     @Autowired
     JwtProvider jwtProvider;
 
+    @ApiOperation("Registrar un usuario final")
     @PostMapping("/registrar-usuario")
     public ResponseEntity<?> registrarUsuario(@RequestParam(name = "foto", required = false) MultipartFile foto,
                                    @Valid @RequestBody NuevoUsuario nuevoUsuario,
                                    BindingResult bindingResult) {
         if (bindingResult.hasErrors())
-            return ResponseEntity.badRequest().body(new Mensaje("campos mal puestos o email inválido"));
-        if (usuarioService.existsByNombreUsuario(nuevoUsuario.getNombreUsuario()))
+            return ResponseEntity.badRequest().body(new Mensaje("Por favor ingrese los campos correctamente"));
+        /*if (usuarioService.existsByNombreUsuario(nuevoUsuario.getNombreUsuario()))
             return ResponseEntity.badRequest().body(new Mensaje("ese nombre ya existe"));
-        if (usuarioService.existsByEmail(nuevoUsuario.getEmail()))
-            return ResponseEntity.badRequest().body(new Mensaje("ese email ya existe"));
+        if (usuarioService.existeUsuarioActivo(nuevoUsuario.getEmail()))
+            return ResponseEntity.badRequest().body(new Mensaje("El correo electrónico ingresado ya existe"));*/
 
         if(foto != null){
             try {
@@ -72,7 +73,7 @@ public class AuthController {
             }
         }
 
-        Usuario usuario = new Usuario(nuevoUsuario.getNombre(), nuevoUsuario.getNombreUsuario(), nuevoUsuario.getEmail(),
+        /*Usuario usuario = new Usuario(nuevoUsuario.getNombre(), nuevoUsuario.getNombreUsuario(), nuevoUsuario.getEmail(),
                 passwordEncoder.encode(nuevoUsuario.getPassword()), null, 1);
         //Path rutaRelativa = Paths.get(foto.getOriginalFilename());
         //Path rutaAbsoluta = rutaRelativa.toAbsolutePath();
@@ -85,14 +86,28 @@ public class AuthController {
         if (nuevoUsuario.getRoles().contains("admin")) roles.add(rolService.getByRolNombre(RolNombre.ROLE_ADMIN).get());
         usuario.setRoles(roles);
         usuario.setEstado(1);
-        usuarioService.save(usuario);
-        return new ResponseEntity(new Mensaje("usuario guardado"), HttpStatus.CREATED);
+        usuarioService.save(usuario);*/
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(usuarioService.registrarUsuario(nuevoUsuario, false));
     }
 
+    @ApiOperation("Registrar un usuario administrador")
+    @PostMapping("/registrar-admin")
+    public ResponseEntity<?> registrarUsuarioAdmin(@RequestParam(name = "foto", required = false) MultipartFile foto,
+                                              @Valid @RequestBody NuevoUsuario nuevoUsuario,
+                                              BindingResult bindingResult) {
+        if (bindingResult.hasErrors())
+            return ResponseEntity.badRequest().body(new Mensaje("Por favor ingrese los campos correctamente"));
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(usuarioService.registrarUsuario(nuevoUsuario, true));
+    }
+
+    @ApiOperation("Login del sistema")
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginUsuario loginUsuario, BindingResult bindingResult) {
-        if (bindingResult.hasErrors())
+        if (bindingResult.hasErrors()){
             return ResponseEntity.badRequest().body(new Mensaje("campos mal puestos"));
+        }
         if(!usuarioService.existeUsuarioActivo(loginUsuario.getEmail())){
             return ResponseEntity.badRequest().body(new Mensaje("El usuario no existe"));
         }
@@ -111,6 +126,7 @@ public class AuthController {
         return ResponseEntity.ok(jwt);
     }
 
+    @ApiOperation("Obtener el usuario logueado")
     @GetMapping("/usuario-logueado")
     public ResponseEntity<?> obtenerUsuarioLogueado(Authentication auth) {
         UsuarioDto usuarioDto = usuarioService.obtenerUsuarioLogueado(auth);
@@ -121,24 +137,10 @@ public class AuthController {
     }
 
 
+    @ApiOperation("Lista de los usuarios activos")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/listar-usuarios-activos")
     public ResponseEntity<?> listarUsuarios() {
-
-        //List<UsuarioDto> listaUsuarioDto = ;
-
-        /*for (Usuario usuario : listaUsuario) {
-
-            UsuarioDto usuarioDto = new UsuarioDto();
-            usuarioDto.setEmail(usuario.getEmail());
-            usuarioDto.setNombreUsuario(usuario.getNombreUsuario());
-            usuarioDto.setNombre(usuario.getNombre());
-            usuarioDto.setFotografia(usuario.getFotografia());
-            usuarioDto.setRoles(usuario.getRoles());
-            usuarioDto.setId(usuario.getId());
-
-            listaUsuarioDto.add(usuarioDto);
-
-        }*/
 
         return ResponseEntity.ok(usuarioService.listarUsuariosActivos());
     }

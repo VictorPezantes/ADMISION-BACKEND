@@ -1,10 +1,14 @@
 package com.pe.ttk.admision.service.impl;
 
+import com.pe.ttk.admision.dto.Mensaje;
 import com.pe.ttk.admision.dto.PostulanteDto;
-import com.pe.ttk.admision.dto.entity.admision.Postulante;
+import com.pe.ttk.admision.dto.entity.admision.OfertaEntity;
+import com.pe.ttk.admision.dto.entity.admision.PostulanteEntity;
 import com.pe.ttk.admision.dto.entity.admision.PostulanteMapping;
+import com.pe.ttk.admision.repository.OfertaRepository;
 import com.pe.ttk.admision.repository.PostulanteRepository;
 import com.pe.ttk.admision.service.PostulanteService;
+import com.pe.ttk.admision.util.Constantes;
 import com.pe.ttk.admision.util.ConvertirFechas;
 import com.pe.ttk.admision.util.GuardarArchivos;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +28,10 @@ public class PostulanteServiceImpl implements PostulanteService {
     @Autowired
     PostulanteRepository postulanteRepository;
 
-    Postulante postulante = new Postulante();
+    @Autowired
+    OfertaRepository ofertaRepository;
+
+    PostulanteEntity postulanteEntity = new PostulanteEntity();
     private Date fechaNacimiento;
     private Date fechaIngresoTrabajoReciente;
     private Date fechaSalidaTrabajoreciente;
@@ -32,7 +39,7 @@ public class PostulanteServiceImpl implements PostulanteService {
     GuardarArchivos guardarArchivos = new GuardarArchivos();
 
 
-    public List<Postulante> list() {
+    public List<PostulanteEntity> list() {
         return postulanteRepository.findAll();
     }
 
@@ -41,9 +48,8 @@ public class PostulanteServiceImpl implements PostulanteService {
                                                         String responsableAsignado, String procedencia, String apellidoPaterno) {
         PostulanteDto postulanteDto = new PostulanteDto();
         List<PostulanteDto> listaPostulantesDto = new ArrayList<>();
-        List<PostulanteMapping> listaPostulantesMapping = postulanteRepository.findByQueryString(estadoPostulacion,distrito, provincia,departamento);
-       if(!listaPostulantesMapping.isEmpty()){
-           for (PostulanteMapping p:listaPostulantesMapping) {
+        /*List<PostulanteMapping> listaPostulantesMapping = postulanteRepository.findByQueryString(estadoPostulacion,distrito, provincia,departamento);
+        if(!listaPostulantesMapping.isEmpty()){for (PostulanteMapping p:listaPostulantesMapping) {
               // postulanteDto.setFechaIngresoTrabajoReciente(p.getFechaIngresoTrabajoReciente());
               // postulanteDto.setFechaSalidaTrabajoreciente(p.getFechaSalidaTrabajoreciente());
                postulanteDto.setApellidoMaterno(p.getApellidoMaterno());
@@ -84,98 +90,107 @@ public class PostulanteServiceImpl implements PostulanteService {
 
 
                listaPostulantesDto.add(postulanteDto);
-           }
+
        }else {
            return listaPostulantesDto;
        }
-
+       */
         return listaPostulantesDto;
     }
 
 
-    public void savePostulante(PostulanteDto postulanteDto, MultipartFile curriculum, MultipartFile dnifrontal, MultipartFile dniposterior, MultipartFile foto) {
+    public Mensaje registrarPostulante(PostulanteDto postulanteDto, MultipartFile curriculum, MultipartFile dnifrontal, MultipartFile dniposterior, MultipartFile foto) {
 
 
-        guardarArchivos.guardarArchivo(curriculum, dnifrontal, dniposterior, foto);
-        fechaNacimiento = Date.valueOf(postulanteDto.getFechaNacimiento());
-        if (postulanteDto.getFechaIngresoTrabajoReciente().isEmpty() || postulanteDto.getFechaSalidaTrabajoreciente().isEmpty()) {
+        //guardarArchivos.guardarArchivo(curriculum, dnifrontal, dniposterior, foto);
+        /*fechaNacimiento = postulanteDto.getFechaNacimiento();
+        if (postulanteDto.getFechaIngresoTrabajoReciente() == null || postulanteDto.getFechaSalidaTrabajoReciente() == null) {
             fechaIngresoTrabajoReciente = null;
             fechaSalidaTrabajoreciente = null;
         } else {
-            fechaIngresoTrabajoReciente = Date.valueOf(postulanteDto.getFechaIngresoTrabajoReciente());
+            fechaIngresoTrabajoReciente = postulanteDto.getFechaIngresoTrabajoReciente();
             fechaSalidaTrabajoreciente = Date.valueOf(postulanteDto.getFechaSalidaTrabajoreciente());
+        }*/
+        postulanteEntity.setFechaIngresoTrabajoReciente(fechaIngresoTrabajoReciente);
+        postulanteEntity.setFechaSalidaTrabajoReciente(fechaSalidaTrabajoreciente);
+        postulanteEntity.setApellidoMaterno(postulanteDto.getApellidoMaterno());
+        postulanteEntity.setApellidoPaterno(postulanteDto.getApellidoPaterno());
+        postulanteEntity.setCelularFamiliar(postulanteDto.getCelularFamiliar());
+        postulanteEntity.setCelular(postulanteDto.getCelular());
+        postulanteEntity.setIdDepartamento(postulanteDto.getIdDepartamento());
+        postulanteEntity.setIdProvincia(postulanteDto.getIdProvincia());
+        //postulanteEntity.setCurriculumVitae(curriculum.getOriginalFilename());
+        postulanteEntity.setIdDistrito(postulanteDto.getIdDistrito());
+        //postulanteEntity.setDniFrontal(dnifrontal.getOriginalFilename());
+        //postulanteEntity.setDniPosterior(dniposterior.getOriginalFilename());
+        postulanteEntity.setEmail(postulanteDto.getEmail());
+        postulanteEntity.setEmailSecundario(postulanteDto.getEmailSecundario());
+        postulanteEntity.setEmpresaCurso(postulanteDto.getEmpresaCurso());
+        postulanteEntity.setDireccion(postulanteDto.getDireccion());
+        postulanteEntity.setEmpresaTrabajoReciente(postulanteDto.getEmpresaTrabajoReciente());
+        postulanteEntity.setIdEstadoCivil(postulanteDto.getIdEstadoCivil());
+        postulanteEntity.setEstadoPostulacion(postulanteDto.getEstadoPostulacion());
+        //postulanteEntity.setFotografia(foto.getOriginalFilename());
+        postulanteEntity.setTelefonoFijo(postulanteDto.getTelefonoFijo());
+        postulanteEntity.setDisponibilidadViajar(postulanteDto.getDisponibilidadViajar());
+        postulanteEntity.setExperienciaRubro(postulanteDto.getExperienciaRubro());
+        postulanteEntity.setFechaNacimiento(postulanteDto.getFechaNacimiento());
+        postulanteEntity.setDni(postulanteDto.getDni());
+        postulanteEntity.setFechaPostulacion(ConvertirFechas.getInstance().obtenerFechaActual());
+        postulanteEntity.setPrimerNombre(postulanteDto.getPrimerNombre());
+        postulanteEntity.setSegundoNombre(postulanteDto.getSegundoNombre());
+        //postulanteEntity.setSubEstadoPostulacion(postulanteDto.getSubEstadoPostulacion());
+        postulanteEntity.setTrabajoReciente(postulanteDto.getTrabajoReciente());
+        postulanteEntity.setLugarEstudios(postulanteDto.getLugarEstudios());
+        postulanteEntity.setProfesion(postulanteDto.getProfesion());
+        postulanteEntity.setUltimoCursoRealizado(postulanteDto.getUltimoCursoRealizado());
+        postulanteEntity.setMotivoSalidaTrabajoReciente(postulanteDto.getMotivoSalidaTrabajoReciente());
+        postulanteEntity.setProcedencia(postulanteDto.getProcedencia());
+        postulanteEntity.setIdOferta(postulanteDto.getIdOferta());
+
+        Optional<OfertaEntity> ofertaOp = ofertaRepository.findByIdAndEstado(postulanteDto.getIdOferta(), Constantes.ESTADO_ACTIVO);
+        if(ofertaOp.isEmpty()){
+            return new Mensaje("No existe la oferta");
         }
-        postulante.setFechaIngresoTrabajoReciente(fechaIngresoTrabajoReciente);
-        postulante.setFechaSalidaTrabajoReciente(fechaSalidaTrabajoreciente);
-        postulante.setApellidoMaterno(postulanteDto.getApellidoMaterno());
-        postulante.setApellidoPaterno(postulanteDto.getApellidoPaterno());
-        postulante.setCelularFamiliar(postulanteDto.getCelularFamiliar());
-        postulante.setCelularPrincipal(postulanteDto.getCelularPrincipal());
-        postulante.setDepartamento(postulanteDto.getDepartamento());
-        postulante.setProvincia(postulanteDto.getProvincia());
-        postulante.setCurriculumVitae(curriculum.getOriginalFilename());
-        postulante.setDistrito(postulanteDto.getDistrito());
-        postulante.setDniFrontal(dnifrontal.getOriginalFilename());
-        postulante.setDniPosterior(dniposterior.getOriginalFilename());
-        postulante.setEmailPrincipal(postulanteDto.getEmailPrincipal());
-        postulante.setEmailSecundario(postulanteDto.getEmailSecundario());
-        postulante.setEmpresaCurso(postulanteDto.getEmpresaCurso());
-        postulante.setDireccionPrincipal(postulanteDto.getDireccionPrincipal());
-        postulante.setEmpresaTrabajoReciente(postulanteDto.getEmpresaTrabajoReciente());
-        postulante.setEstadoCivil(postulanteDto.getEstadoCivil());
-        postulante.setEstadoPostulacion(postulanteDto.getEstadoPostulacion());
-        postulante.setFotografia(foto.getOriginalFilename());
-        postulante.setTelefonoFijo(postulanteDto.getTelefonoFijo());
-        postulante.setRespuestaDisponibilidadViajar(postulanteDto.getRespuestaDisponibilidadViajar());
-        postulante.setRespuestaExperienciaMantencion(postulanteDto.getRespuestaExperienciaMantencion());
-        postulante.setFechaNacimiento(fechaNacimiento);
-        postulante.setFechaPostulacion(convertirFechas.stringToDateSql());
-        postulante.setPrimerNombre(postulanteDto.getPrimerNombre());
-        postulante.setSegundoNombre(postulanteDto.getSegundoNombre());
-        postulante.setSubEstadoPostulacion(postulanteDto.getSubEstadoPostulacion());
-        postulante.setTrabajoReciente(postulanteDto.getTrabajoReciente());
-        postulante.setLugarEstudios(postulanteDto.getLugarEstudios());
-        postulante.setProfesion(postulanteDto.getProfesion());
-        postulante.setUltimoCursoRealizado(postulanteDto.getUltimoCursoRealizado());
-        postulante.setMotivoSalidaTrabajoReciente(postulanteDto.getMotivoSalidaTrabajoReciente());
-        postulante.setProcedencia(postulanteDto.getProcedencia());
-        postulante.setCargoPostulante(postulanteDto.getCargoPostulante());
-        postulante.setOfertaPostulada(postulanteDto.getOfertaPostulada());
-        postulante.setCantidadPostulaciones(postulanteDto.getCantidadPostulaciones());
-        postulante.setResponsableAsignado(postulanteDto.getResponsableAsignado());
-        postulante.setDni(postulanteDto.getDni());
-        postulanteRepository.save(postulante);
+        OfertaEntity ofertaDb = ofertaOp.get();
+        postulanteEntity.setOfertaPostulada(ofertaDb.getTitulo());
+        //postulanteEntity.setCantidadPostulaciones(postulanteDto.getCantidadPostulaciones());
+        //postulanteEntity.setResponsableAsignado(postulanteDto.getResponsableAsignado());
+        postulanteEntity.setEstado(Constantes.ESTADO_ACTIVO);
+
+        postulanteRepository.save(postulanteEntity);
+        return new Mensaje("Postulante registrado correctamente");
     }
 
     @Override
-    public void UpdatePostulante(Postulante postulante,PostulanteDto postulanteDto, MultipartFile dnifrontal,MultipartFile dniposterior,MultipartFile foto) {
+    public void UpdatePostulante(PostulanteEntity postulanteEntity, PostulanteDto postulanteDto, MultipartFile dnifrontal, MultipartFile dniposterior, MultipartFile foto) {
 
         guardarArchivos.actualizarArchivo(dnifrontal, dniposterior, foto);
-        postulante.setCelularFamiliar(postulanteDto.getCelularFamiliar());
-        postulante.setCelularPrincipal(postulanteDto.getCelularPrincipal());
-        postulante.setDepartamento(postulanteDto.getDepartamento());
-        postulante.setDistrito(postulanteDto.getDistrito());
-        postulante.setProvincia(postulanteDto.getProvincia());
-        postulante.setDniFrontal(dnifrontal.getOriginalFilename());
-        postulante.setDniPosterior(dniposterior.getOriginalFilename());
-        postulante.setFotografia(foto.getOriginalFilename());
-        postulante.setEmailPrincipal(postulanteDto.getEmailPrincipal());
-        postulante.setDireccionPrincipal(postulanteDto.getDireccionPrincipal());
-        postulante.setEstadoCivil(postulanteDto.getEstadoCivil());
-        postulante.setEstadoPostulacion(postulanteDto.getEstadoPostulacion());
-        postulante.setFotografia(postulanteDto.getFotografia());
-        postulante.setTelefonoFijo(postulanteDto.getTelefonoFijo());
-        postulante.setSubEstadoPostulacion(postulanteDto.getSubEstadoPostulacion());
-        postulante.setResponsableAsignado(postulanteDto.getResponsableAsignado());
-        postulante.setProcedencia(postulanteDto.getProcedencia());
-        postulanteRepository.save(postulante);
+        postulanteEntity.setCelularFamiliar(postulanteDto.getCelularFamiliar());
+        /*postulanteEntity.setCelularPrincipal(postulanteDto.getCelularPrincipal());
+        postulanteEntity.setDepartamento(postulanteDto.getDepartamento());
+        postulanteEntity.setDistrito(postulanteDto.getDistrito());
+        postulanteEntity.setProvincia(postulanteDto.getProvincia());
+        postulanteEntity.setDniFrontal(dnifrontal.getOriginalFilename());
+        postulanteEntity.setDniPosterior(dniposterior.getOriginalFilename());
+        postulanteEntity.setFotografia(foto.getOriginalFilename());
+        postulanteEntity.setEmailPrincipal(postulanteDto.getEmailPrincipal());
+        postulanteEntity.setDireccionPrincipal(postulanteDto.getDireccionPrincipal());
+        postulanteEntity.setEstadoCivil(postulanteDto.getEstadoCivil());
+        postulanteEntity.setEstadoPostulacion(postulanteDto.getEstadoPostulacion());
+        postulanteEntity.setFotografia(postulanteDto.getFotografia());
+        postulanteEntity.setTelefonoFijo(postulanteDto.getTelefonoFijo());
+        postulanteEntity.setSubEstadoPostulacion(postulanteDto.getSubEstadoPostulacion());
+        postulanteEntity.setResponsableAsignado(postulanteDto.getResponsableAsignado());
+        postulanteEntity.setProcedencia(postulanteDto.getProcedencia());
+        postulanteRepository.save(postulanteEntity);*/
     }
 
     public void delete(int id) {
         postulanteRepository.deleteById(id);
     }
 
-    public Optional<Postulante> getOne(int id) {
+    public Optional<PostulanteEntity> getOne(int id) {
         return postulanteRepository.findById(id);
     }
 }

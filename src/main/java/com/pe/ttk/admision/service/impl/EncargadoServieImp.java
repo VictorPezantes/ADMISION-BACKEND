@@ -22,6 +22,7 @@ public class EncargadoServieImp implements EncargadoService {
         return encargadoRepository.findAll();
     }
 
+    @Override
     public void registrarEncargado(Encargado encargado) {
 
         encargadoRepository.save(encargado);
@@ -49,6 +50,7 @@ public class EncargadoServieImp implements EncargadoService {
         return encargadoRepository.findById( id);
     }
 
+    @Override
     public boolean existsByEmail(String email) {
 
         return encargadoRepository.existsByEmail(email);

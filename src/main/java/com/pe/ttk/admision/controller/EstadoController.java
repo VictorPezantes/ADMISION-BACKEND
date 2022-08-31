@@ -13,26 +13,25 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/estado")
+@RequestMapping("/api/v1/estado")
 @CrossOrigin(origins = "http://localhost:4200")
 public class EstadoController {
 
     @Autowired
     EstadoServiceImp estadoServiceImp;
 
-    @ApiOperation("Lista todos los estados de las  ofertas y su paginacion")
+    @ApiOperation("Lista todos los estados de las  ofertas")
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping(value = "/lista", produces = "application/json")
+    @GetMapping("/listar")
     public ResponseEntity<?> listarEstados() {
-        List<Estado> listaEstados = estadoServiceImp.listaEstados();
 
-        return ResponseEntity.ok(listaEstados);
+        return ResponseEntity.ok(estadoServiceImp.listaEstados());
 
     }
 
     @ApiOperation("Registrar estado")
     @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping(value = "/registrar", produces = "application/json")
+    @PutMapping("/registrar")
     public ResponseEntity<?> registrarEstado(@RequestBody Estado estado) {
 
         estadoServiceImp.registrarEstado(estado);

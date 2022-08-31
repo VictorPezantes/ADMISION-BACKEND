@@ -23,7 +23,7 @@ public class Cargo  implements Serializable {
         private String nombreCargo;
         @Column(nullable = true, length = 200)
         private String descripcion;
-
+        private int estado;
 
 
 }

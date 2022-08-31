@@ -28,7 +28,7 @@ import io.jsonwebtoken.UnsupportedJwtException;
 @Component
 public class JwtProvider {
 
-	private final static Logger logger = LoggerFactory.getLogger(JwtProvider.class);
+	private static final Logger logger = LoggerFactory.getLogger(JwtProvider.class);
 
 	@Value("${jwt.secret}")
 	private String secret;
@@ -94,15 +94,7 @@ public class JwtProvider {
 	                .setExpiration(new Date(new Date().getTime() + expiration))
 	                .signWith(SignatureAlgorithm.HS512, secret.getBytes())
 	                .compact();
-			
-			
 		}
-		
 		return null;
-		
-		
-		
-        
     }
-
 }

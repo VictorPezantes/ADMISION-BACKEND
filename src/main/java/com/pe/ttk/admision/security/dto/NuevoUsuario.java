@@ -13,11 +13,14 @@ public class NuevoUsuario {
 	
 	@NotBlank
 	private String nombre;
+	@NotBlank
+	private String apellidos;
+	@NotBlank
 	@Email
 	private String email;
 	@NotBlank
 	private String password;
-	@NotBlank
+
 	private String nombreUsuario;
 
 	private String fotografia;

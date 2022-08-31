@@ -3,15 +3,16 @@ package com.pe.ttk.admision.dto.entity.admision;
 import lombok.*;
 
 import javax.persistence.*;
-import java.sql.Date;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotEmpty;
+import java.util.Date;
 
-@Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Data
-@SqlResultSetMappings({
+@Table(name = "postulante")
+/*@SqlResultSetMappings({
         @SqlResultSetMapping(name = "PostulanteMapping",
                         columns = {@ColumnResult(name = "primerNombre"),
                                 @ColumnResult(name = "segundoNombre"),
@@ -56,7 +57,7 @@ import java.sql.Date;
 
 })
 
-@NamedNativeQueries({@NamedNativeQuery(name = "Postulante.findByQueryString",
+@NamedNativeQueries({@NamedNativeQuery(name = "PostulanteEntity.findByQueryString",
         query =
                 "SELECT p.primer_nombre as primerNombre,p.segundo_nombre as segundoNombre,p.apellido_paterno as apellidoPaterno,p.apellido_materno as apellidoMaterno,p.dni as dni,"
                         + "p.estado_civil as estadoCivil,p.fecha_nacimiento as fechaNacimiento,p.direccion_principal as direccionPrincipal,p.distrito as distrito,"
@@ -74,84 +75,62 @@ import java.sql.Date;
                         + " AND p.departamento          =:departamento OR departamento = '-1'",
         resultSetMapping = "PostulanteMapping")
 
-})
+})*/
 
-public class Postulante {
+public class PostulanteEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
-    @Column(name = "primer_nombre")
+    private Long id;
+    @NotEmpty
     private String primerNombre;
-    @Column(name = "segundo_nombre")
     private String segundoNombre;
-    @Column(name = "apellido_paterno")
+    @NotEmpty
     private String apellidoPaterno;
-    @Column(name = "apellido_materno")
+    @NotEmpty
     private String apellidoMaterno;
-    @Column(name = "estado_civil")
-    private String estadoCivil;
-    @Column(name = "fecha_nacimiento")
+    @NotEmpty
+    private Long idEstadoCivil;
+    @NotEmpty
+    private String dni;
+    @NotEmpty
     private Date fechaNacimiento;
-    @Column(name = "direccion_principal")
-    private String direccionPrincipal;
-    private String distrito;
-    private String provincia;
-    private String departamento;
-    @Column(name = "celular_principal")
-    private String celularPrincipal;
-    @Column(name = "celular_familiar")
+    @NotEmpty
+    private String direccion;
+    @NotEmpty
+    private Long idDistrito;
+    @NotEmpty
+    private Long idProvincia;
+    @NotEmpty
+    private Long idDepartamento;
+    @NotEmpty
+    private String celular;
     private String celularFamiliar;
-    @Column(name = "telefono_fijo")
     private String telefonoFijo;
-    @Column(name = "email_principal")
-    private String emailPrincipal;
-    @Column(name = "email_secundario")
+    @NotEmpty
+    @Email
+    private String email;
     private String emailSecundario;
     private String profesion;
-    @Column(name = "lugar_estudios")
     private String lugarEstudios;
-    @Column(name = "ultimo_curso_realizado")
     private String ultimoCursoRealizado;
-    @Column(name = "empresa_curso")
     private String empresaCurso;
-    @Column(name = "trabajo_reciente")
     private String trabajoReciente;
-    @Column(name = "fecha_ingreso_trabajo_reciente")
     private Date fechaIngresoTrabajoReciente;
-    @Column(name = "fecha_salida_trabajo_reciente")
     private Date fechaSalidaTrabajoReciente;
-    @Column(name = "empresa_trabajo_reciente")
-    private String EmpresaTrabajoReciente;
-    @Column(name = "motivo_salida_trabajo_reciente")
+    private String empresaTrabajoReciente;
     private String motivoSalidaTrabajoReciente;
-    @Column(name = "curriculum_vitae")
-    private String curriculumVitae;
-    @Column(name = "dni_frontal")
-    private String dniFrontal;
-    @Column(name = "dni_posterior")
-    private String dniPosterior;
-    private String fotografia;
-    @Column(name = "respuesta_disponibilidad_viajar")
-    private String respuestaDisponibilidadViajar;
-    @Column(name = "respuesta_experiencia_mantencion")
-    private String respuestaExperienciaMantencion;
-    @Column(name = "estado_postulacion")
-    private String estadoPostulacion;
-    @Column(name = "sub_estado_postulacion")
-    private String subEstadoPostulacion;
-    @Column(name = "fecha_postulacion")
+    private Integer disponibilidadViajar;
+    private Integer experienciaRubro;
+    private Integer estadoPostulacion;
     private Date fechaPostulacion;
     private String procedencia;
-    @Column(name = "cargo_postulante")
-    private String cargoPostulante;
-    @Column(name = "oferta_postulada")
+    private Long idOferta;
     private String ofertaPostulada;
-    @Column(name = "cantidad_postulaciones")
-    private int cantidadPostulaciones;
-    @Column(name = "responsable_asignado")
-    private String responsableAsignado;
-    private String dni;
-
+    private String urlCurriculumVitae;
+    private String urlDniFrontal;
+    private String urlDniPosterior;
+    private String urlFotografia;
+    private Integer estado;
 
 }

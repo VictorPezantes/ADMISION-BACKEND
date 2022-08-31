@@ -15,7 +15,7 @@ import java.sql.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name ="oferta")
-public class Oferta implements Serializable{
+public class OfertaEntity implements Serializable{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -32,6 +32,7 @@ public class Oferta implements Serializable{
     private Date fechaDesactivado;
     @Column(nullable = false)
     private int cantidadPostulantes;
+    private int estado;
 
 
     @ManyToOne(fetch = FetchType.EAGER )

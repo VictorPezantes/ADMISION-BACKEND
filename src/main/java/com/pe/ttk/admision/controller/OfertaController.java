@@ -1,11 +1,10 @@
 package com.pe.ttk.admision.controller;
 
-import com.google.gson.Gson;
 import com.pe.ttk.admision.dto.Mensaje;
 import com.pe.ttk.admision.dto.OfertaDto;
 import com.pe.ttk.admision.dto.entity.master.Encargado;
 import com.pe.ttk.admision.dto.entity.master.Estado;
-import com.pe.ttk.admision.dto.entity.admision.Oferta;
+import com.pe.ttk.admision.dto.entity.admision.OfertaEntity;
 import com.pe.ttk.admision.exceptions.TTKDataException;
 import com.pe.ttk.admision.service.impl.OfertaServiceImpl;
 import com.pe.ttk.admision.util.FilterParam;
@@ -14,6 +13,7 @@ import com.pe.ttk.admision.util.SearchCriteria;
 import com.pe.ttk.admision.util.input.data.OfertaFindInputData;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,60 +26,77 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-@RequestMapping("/oferta")
+@RequestMapping("api/v1/oferta")
 @CrossOrigin(origins = "http://localhost:4200")
 public class OfertaController {
 
     @Autowired
     OfertaServiceImpl ofertaService;
 
-    @ApiOperation("Lista todas las ofertas creadas")
+    @ApiOperation("Listar las ofertas activas")
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/lista")
-    public String listarOfertas(@RequestParam(value = "numpagina") Integer page,
-                                @RequestParam(value = "size") Integer size,
-                                Model model) {
+    @GetMapping("/listar")
+    public ResponseEntity<?> listarOfertas(@RequestParam(defaultValue = "0") Integer numPagina,
+                                @RequestParam(defaultValue = "10") Integer tamPagina,
+                                @RequestParam(defaultValue = "") String titulo,
+                                @RequestParam(defaultValue = "") List estado,
+                                @RequestParam(defaultValue = "")String fechaPublicacion,
+                                @RequestParam(defaultValue = "")List creador) {
 
-        List<Oferta> listaOfertas = ofertaService.listarOfertas();
-
-        return PaginationUtils.getPaginationedResults(listaOfertas, page, size, model);
+        return ResponseEntity.ok(ofertaService.listarOfertas(numPagina, tamPagina, titulo, estado,
+                fechaPublicacion, creador));
     }
 
+    @ApiOperation("Listar las ofertas activadas para landing")
+    @GetMapping("/listar-landing")
+    public ResponseEntity<?> listarOfertasLanding(@RequestParam(defaultValue = "0") Integer numPagina,
+                                           @RequestParam(defaultValue = "10") Integer tamPagina) {
 
-    @ApiOperation("Crear ofertas")
+        return ResponseEntity.ok(ofertaService.listarOfertasLanding(numPagina, tamPagina));
+    }
+
+    @ApiOperation("Obtener oferta para actualizar")
     @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping("/crear")
-    public ResponseEntity<?> crearOferta(@RequestBody Oferta oferta, Authentication auth) {
+    @GetMapping("/obtener/{id}")
+    public ResponseEntity<?> obtenerOferta(@PathVariable Long id, Authentication auth) {
+        if(!auth.isAuthenticated()){
+            return ResponseEntity.badRequest().body(new Mensaje("No está logueado en el sistema"));
+        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(ofertaService.obtenerOferta(id));
+    }
 
-        ofertaService.registrarOferta(oferta, auth);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ofertaService.registrarOferta(oferta, auth));
+    @ApiOperation("Registrar oferta")
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/registrar")
+    public ResponseEntity<?> registrarOferta(@RequestBody OfertaDto ofertaDto, Authentication auth) {
+        if(!auth.isAuthenticated()){
+           return ResponseEntity.badRequest().body(new Mensaje("No está logueado en el sistema"));
+        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(ofertaService.registrarOferta(ofertaDto, auth));
     }
 
     @ApiOperation("Actualizar distintos campos de una oferta")
     @PreAuthorize("hasRole('ADMIN')")
-    @PatchMapping("/actualizar/{id}")
-    public ResponseEntity<?> actualizarOferta(@PathVariable("id") Long id, @RequestBody OfertaDto ofertaDto) {
+    @PatchMapping("/actualizar")
+    public ResponseEntity<?> actualizarOferta(@RequestBody OfertaDto ofertaDto) {
 
-        ofertaService.actualizarOferta(id, ofertaDto);
-        return ResponseEntity.accepted().body(new Mensaje("oferta actualizada"));
+        return ResponseEntity.accepted().body(ofertaService.actualizarOferta(ofertaDto));
     }
 
     @ApiOperation("Actualizar estado de una oferta")
     @PreAuthorize("hasRole('ADMIN')")
-    @PatchMapping("/actualizar/estado/{id}")
-    public ResponseEntity<?> actualizarEstadoOferta(@PathVariable("id") Long id, @RequestBody OfertaDto ofertaDto) {
+    @PatchMapping("/actualizar-estado")
+    public ResponseEntity<?> actualizarEstadoOferta(@RequestBody OfertaDto ofertaDto) {
 
-        ofertaService.actualizarEstadoOferta(id, ofertaDto);
-        return ResponseEntity.accepted().body(new Mensaje("oferta actualizada"));
+        return ResponseEntity.accepted().body(ofertaService.actualizarEstadoOferta(ofertaDto));
     }
 
     @ApiOperation("Eliminar una oferta por id")
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/eliminar")
-    public ResponseEntity<?> eliminarOferta(@RequestParam("id") Long id) {
+    public ResponseEntity<?> eliminarOferta(@RequestBody OfertaDto ofertaDto) {
 
-        ofertaService.delete(id);
-        return ResponseEntity.ok(new Mensaje("Oferta eliminada"));
+        return ResponseEntity.ok(ofertaService.eliminarOferta(ofertaDto));
     }
 
     @ApiOperation("Lista filtrada por datos del postulante")
@@ -93,24 +110,24 @@ public class OfertaController {
                                          @RequestParam(value = "fechaPublicacion") String fechaPublicacion,
                                          Model model) throws TTKDataException {
 
-        List<Oferta> listaOfertas= new ArrayList<>();
+        List<OfertaEntity> listaOfertaEntities = new ArrayList<>();
 
         if(!query.isEmpty()) {
             List<SearchCriteria> params = FilterParam.filter(query);
             OfertaFindInputData input = new OfertaFindInputData();
             input.fillData(params);
-            listaOfertas = ofertaService.findOfertaByQueryString(input.getTitulo());
+            listaOfertaEntities = ofertaService.findOfertaByQueryString(input.getTitulo());
         }
         if(estado  != null)
-            listaOfertas = ofertaService.findByEstadoOferta(estado);
+            listaOfertaEntities = ofertaService.findByEstadoOferta(estado);
         if(creador != null)
-            listaOfertas = ofertaService.findByCreadorOferta(creador);
+            listaOfertaEntities = ofertaService.findByCreadorOferta(creador);
 
         if(!fechaPublicacion.isEmpty()){
 
             Date fecha = Date.valueOf(fechaPublicacion);;
-            listaOfertas = ofertaService.findByfechaPublicacion(fecha);}
-        return PaginationUtils.getPaginationedResults(listaOfertas, page, size, model);
+            listaOfertaEntities = ofertaService.findByfechaPublicacion(fecha);}
+        return PaginationUtils.getPaginationedResults(listaOfertaEntities, page, size, model);
     }
 
 

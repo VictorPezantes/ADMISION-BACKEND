@@ -9,6 +9,7 @@ import com.pe.ttk.admision.dto.Mensaje;
 import com.pe.ttk.admision.security.dto.ChangePasswordDto;
 import com.pe.ttk.admision.security.dto.EmailValuesDto;
 import com.pe.ttk.admision.security.entity.Usuario;
+import com.pe.ttk.admision.security.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -21,7 +22,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.pe.ttk.admision.security.service.UsuarioService;
+import com.pe.ttk.admision.security.service.impl.UsuarioServiceImpl;
 import com.pe.ttk.admision.security.service.impl.EmailServiceImpl;
 
 @RestController

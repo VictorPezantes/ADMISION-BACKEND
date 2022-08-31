@@ -3,7 +3,8 @@ package com.pe.ttk.admision.service;
 import com.pe.ttk.admision.dto.Mensaje;
 import com.pe.ttk.admision.dto.OfertaDto;
 import com.pe.ttk.admision.dto.entity.master.Encargado;
-import com.pe.ttk.admision.dto.entity.admision.Oferta;
+import com.pe.ttk.admision.dto.entity.admision.OfertaEntity;
+import org.springframework.data.domain.Page;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
@@ -15,22 +16,27 @@ import java.util.Optional;
 public interface OfertaService {
 
 
-    List<Oferta> listarOfertas();
+    Page<OfertaDto> listarOfertas(Integer numPagina, Integer tamPagina, String titulo, List estado, String fechaPublicacion, List creador);
+
+    Page<OfertaDto> listarOfertasLanding(Integer numPagina, Integer tamPagina);
 
 
-    Mensaje registrarOferta(Oferta oferta, Authentication auth);
+    Mensaje registrarOferta(OfertaDto ofertaDto, Authentication auth);
 
-    void actualizarOferta(Long id, OfertaDto ofertaDto);
-    void actualizarEstadoOferta(Long id, OfertaDto ofertaDto);
+    Mensaje actualizarOferta(OfertaDto ofertaDto);
+    Mensaje actualizarEstadoOferta(OfertaDto ofertaDto);
 
     void delete(Long id);
 
-    Optional<Oferta> getOne(Long id);
+    Optional<OfertaEntity> getOne(Long id);
 
-    public List<Oferta> findOfertaByQueryString(String titulo);
-    List<Oferta> findByCreadorOferta(Encargado creador);
+    public List<OfertaEntity> findOfertaByQueryString(String titulo);
+    List<OfertaEntity> findByCreadorOferta(Encargado creador);
 
-    List<Oferta> findByfechaPublicacion(Date fechaPublicacion);
+    List<OfertaEntity> findByfechaPublicacion(Date fechaPublicacion);
 
+    OfertaDto obtenerOferta(Long id);
+
+    Mensaje eliminarOferta(OfertaDto ofertaDto);
 
 }
