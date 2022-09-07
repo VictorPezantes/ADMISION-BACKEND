@@ -5,7 +5,10 @@ import com.pe.ttk.admision.security.dto.NuevoUsuario;
 import com.pe.ttk.admision.security.dto.UsuarioDto;
 import com.pe.ttk.admision.security.entity.Usuario;
 import org.springframework.security.core.Authentication;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,8 +34,12 @@ public interface UsuarioService {
 
     UsuarioDto obtenerUsuarioLogueado(Authentication auth);
 
-    boolean existeUsuarioActivo(String email);
+    boolean existeEmailUsuarioActivo(String email);
 
-    Mensaje registrarUsuario(NuevoUsuario nuevoUsuario, boolean isAdmin);
+    boolean existeEmailActivo(String email);
+
+    boolean existeNombreUsuarioActivo(String nombreUsuario);
+
+    Mensaje registrarUsuario(NuevoUsuario nuevoUsuario, boolean isAdmin, MultipartFile foto);
 
 }

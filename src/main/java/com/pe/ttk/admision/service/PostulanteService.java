@@ -3,6 +3,7 @@ package com.pe.ttk.admision.service;
 import com.pe.ttk.admision.dto.Mensaje;
 import com.pe.ttk.admision.dto.PostulanteDto;
 import com.pe.ttk.admision.dto.entity.admision.PostulanteEntity;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -23,4 +24,6 @@ public interface PostulanteService {
 
     void delete(int id);
     Optional<PostulanteEntity> getOne(int id);
+
+    Page<PostulanteDto> listarPostulantes(Integer numPagina, Integer tamPagina);
 }

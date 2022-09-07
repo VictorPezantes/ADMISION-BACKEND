@@ -16,13 +16,16 @@ import com.pe.ttk.admision.security.repository.UsuarioRepository;
 import com.pe.ttk.admision.security.service.RolService;
 import com.pe.ttk.admision.security.service.UsuarioService;
 import com.pe.ttk.admision.util.Constantes;
+import com.pe.ttk.admision.util.GuardarArchivos;
 import com.pe.ttk.admision.util.mapper.UsuarioMapper;
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @Transactional
@@ -35,6 +38,8 @@ public class UsuarioServiceImpl implements UsuarioService {
 
 	@Autowired
 	RolService rolService;
+
+	private GuardarArchivos guardarArchivos = new GuardarArchivos();
 
 	@Override
 	public Optional<Usuario> getByNombreUsuario(String nombreUsuario) {
@@ -100,14 +105,28 @@ public class UsuarioServiceImpl implements UsuarioService {
 	}
 
 	@Override
-	public boolean existeUsuarioActivo(String email){
+	public boolean existeEmailUsuarioActivo(String email) {
+		return usuarioRepository.existsByEstadoAndEmailOrNombreUsuario(Constantes.ESTADO_ACTIVO, email, email);
+	}
+
+	@Override
+	public boolean existeEmailActivo(String email){
 		return usuarioRepository.existsByEmailAndEstado(email, Constantes.ESTADO_ACTIVO);
 	}
 
 	@Override
-	public Mensaje registrarUsuario(NuevoUsuario nuevoUsuario, boolean isAdmin) {
-		if (existeUsuarioActivo(nuevoUsuario.getEmail())){
+	public boolean existeNombreUsuarioActivo(String nombreUsuario) {
+		return usuarioRepository.existsByNombreUsuarioAndEstado(nombreUsuario, Constantes.ESTADO_ACTIVO);
+	}
+
+	@Override
+	public Mensaje registrarUsuario(NuevoUsuario nuevoUsuario, boolean isAdmin, MultipartFile foto) {
+		if (existeEmailActivo(nuevoUsuario.getEmail())){
 			return new Mensaje("El correo electrónico ingresado ya existe");
+		}
+
+		if (existeNombreUsuarioActivo(nuevoUsuario.getNombreUsuario())){
+			return new Mensaje("El usuario ingresado ya existe");
 		}
 
 		Set<Rol> roles = new HashSet<>();
@@ -129,9 +148,16 @@ public class UsuarioServiceImpl implements UsuarioService {
 		usuario.setNombre(nuevoUsuario.getNombre());
 		usuario.setApellidos(nuevoUsuario.getApellidos());
 		usuario.setEmail(nuevoUsuario.getEmail());
+		usuario.setNombreUsuario(nuevoUsuario.getNombreUsuario());
 		usuario.setPassword(passwordEncoder.encode(nuevoUsuario.getPassword()));
 		usuario.setRoles(roles);
 		usuario.setEstado(Constantes.ESTADO_ACTIVO);
+
+		if(!foto.isEmpty()){
+			String nombreFoto = usuario.getNombreUsuario()+Constantes.AVATAR+"."+ FilenameUtils.getExtension(foto.getOriginalFilename());
+			guardarArchivos.guardarArchivo(foto, nombreFoto, "archivos/Empleado");
+			usuario.setFotografia(nombreFoto);
+		}
 
 		usuarioRepository.save(usuario);
 

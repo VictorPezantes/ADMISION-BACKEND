@@ -10,4 +10,6 @@ public class TtkAdmisionApplication {
 		SpringApplication.run(TtkAdmisionApplication.class, args);
 	}
 
+
+
 }

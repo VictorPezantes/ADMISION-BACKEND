@@ -127,10 +127,10 @@ public class PostulanteEntity {
     private String procedencia;
     private Long idOferta;
     private String ofertaPostulada;
-    private String urlCurriculumVitae;
-    private String urlDniFrontal;
-    private String urlDniPosterior;
-    private String urlFotografia;
+    private String curriculum;
+    private String dniFrontal;
+    private String dniPosterior;
+    private String foto;
     private Integer estado;
 
 }

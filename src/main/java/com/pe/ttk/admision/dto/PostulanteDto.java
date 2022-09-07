@@ -15,7 +15,7 @@ public class PostulanteDto {
     private String apellidoMaterno;
     private Long idEstadoCivil;
     private String dni;
-    @JsonFormat(pattern = "dd/MM/yyyy")
+    @JsonFormat(pattern = "dd/MM/yyyy", timezone = "America/Lima")
     private Date fechaNacimiento;
     private String direccion;
     private Long idDistrito;
@@ -31,16 +31,16 @@ public class PostulanteDto {
     private String ultimoCursoRealizado;
     private String empresaCurso;
     private String trabajoReciente;
-    @JsonFormat(pattern = "dd/MM/yyyy")
+    @JsonFormat(pattern = "dd/MM/yyyy", timezone = "America/Lima")
     private Date fechaIngresoTrabajoReciente;
-    @JsonFormat(pattern = "dd/MM/yyyy")
+    @JsonFormat(pattern = "dd/MM/yyyy", timezone = "America/Lima")
     private Date fechaSalidaTrabajoReciente;
     private String empresaTrabajoReciente;
     private String motivoSalidaTrabajoReciente;
     private Integer disponibilidadViajar;
     private Integer experienciaRubro;
     private Integer estadoPostulacion;
-    @JsonFormat(pattern = "dd/MM/yyyy")
+    @JsonFormat(pattern = "dd/MM/yyyy", timezone = "America/Lima")
     private Date fechaPostulacion;
     private String procedencia;
     private Long idOferta;

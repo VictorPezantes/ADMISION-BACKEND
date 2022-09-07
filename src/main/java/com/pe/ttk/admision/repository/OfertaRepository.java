@@ -28,5 +28,4 @@ public interface OfertaRepository extends PagingAndSortingRepository<OfertaEntit
 
     Optional<OfertaEntity> findByIdAndEstado(Long id, Integer estado);
 
-
 }

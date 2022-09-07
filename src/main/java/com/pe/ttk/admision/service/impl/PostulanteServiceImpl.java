@@ -4,34 +4,44 @@ import com.pe.ttk.admision.dto.Mensaje;
 import com.pe.ttk.admision.dto.PostulanteDto;
 import com.pe.ttk.admision.dto.entity.admision.OfertaEntity;
 import com.pe.ttk.admision.dto.entity.admision.PostulanteEntity;
-import com.pe.ttk.admision.dto.entity.admision.PostulanteMapping;
+import com.pe.ttk.admision.dto.entity.master.HistorialEntity;
+import com.pe.ttk.admision.repository.HistorialRepository;
 import com.pe.ttk.admision.repository.OfertaRepository;
 import com.pe.ttk.admision.repository.PostulanteRepository;
+import com.pe.ttk.admision.security.service.EmailService;
 import com.pe.ttk.admision.service.PostulanteService;
 import com.pe.ttk.admision.util.Constantes;
 import com.pe.ttk.admision.util.ConvertirFechas;
 import com.pe.ttk.admision.util.GuardarArchivos;
+import com.pe.ttk.admision.util.mapper.PostulanteMapper;
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.sql.Date;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
 public class PostulanteServiceImpl implements PostulanteService {
 
     @Autowired
-    PostulanteRepository postulanteRepository;
+    private PostulanteRepository postulanteRepository;
 
     @Autowired
-    OfertaRepository ofertaRepository;
+    private OfertaRepository ofertaRepository;
 
-    PostulanteEntity postulanteEntity = new PostulanteEntity();
+    @Autowired
+    private EmailService emailService;
+
+    @Autowired
+    private HistorialRepository historialRepository;
+
+
     private Date fechaNacimiento;
     private Date fechaIngresoTrabajoReciente;
     private Date fechaSalidaTrabajoreciente;
@@ -99,66 +109,97 @@ public class PostulanteServiceImpl implements PostulanteService {
     }
 
 
-    public Mensaje registrarPostulante(PostulanteDto postulanteDto, MultipartFile curriculum, MultipartFile dnifrontal, MultipartFile dniposterior, MultipartFile foto) {
+    public Mensaje registrarPostulante(PostulanteDto postulanteDto, MultipartFile curriculum, MultipartFile dniFrontal,
+                                       MultipartFile dniPosterior, MultipartFile foto) {
 
+        String dni = postulanteDto.getDni();
 
-        //guardarArchivos.guardarArchivo(curriculum, dnifrontal, dniposterior, foto);
-        /*fechaNacimiento = postulanteDto.getFechaNacimiento();
-        if (postulanteDto.getFechaIngresoTrabajoReciente() == null || postulanteDto.getFechaSalidaTrabajoReciente() == null) {
-            fechaIngresoTrabajoReciente = null;
-            fechaSalidaTrabajoreciente = null;
-        } else {
-            fechaIngresoTrabajoReciente = postulanteDto.getFechaIngresoTrabajoReciente();
-            fechaSalidaTrabajoreciente = Date.valueOf(postulanteDto.getFechaSalidaTrabajoreciente());
-        }*/
-        postulanteEntity.setFechaIngresoTrabajoReciente(fechaIngresoTrabajoReciente);
-        postulanteEntity.setFechaSalidaTrabajoReciente(fechaSalidaTrabajoreciente);
-        postulanteEntity.setApellidoMaterno(postulanteDto.getApellidoMaterno());
-        postulanteEntity.setApellidoPaterno(postulanteDto.getApellidoPaterno());
-        postulanteEntity.setCelularFamiliar(postulanteDto.getCelularFamiliar());
-        postulanteEntity.setCelular(postulanteDto.getCelular());
-        postulanteEntity.setIdDepartamento(postulanteDto.getIdDepartamento());
-        postulanteEntity.setIdProvincia(postulanteDto.getIdProvincia());
-        //postulanteEntity.setCurriculumVitae(curriculum.getOriginalFilename());
-        postulanteEntity.setIdDistrito(postulanteDto.getIdDistrito());
-        //postulanteEntity.setDniFrontal(dnifrontal.getOriginalFilename());
-        //postulanteEntity.setDniPosterior(dniposterior.getOriginalFilename());
-        postulanteEntity.setEmail(postulanteDto.getEmail());
-        postulanteEntity.setEmailSecundario(postulanteDto.getEmailSecundario());
-        postulanteEntity.setEmpresaCurso(postulanteDto.getEmpresaCurso());
-        postulanteEntity.setDireccion(postulanteDto.getDireccion());
-        postulanteEntity.setEmpresaTrabajoReciente(postulanteDto.getEmpresaTrabajoReciente());
-        postulanteEntity.setIdEstadoCivil(postulanteDto.getIdEstadoCivil());
-        postulanteEntity.setEstadoPostulacion(postulanteDto.getEstadoPostulacion());
-        //postulanteEntity.setFotografia(foto.getOriginalFilename());
-        postulanteEntity.setTelefonoFijo(postulanteDto.getTelefonoFijo());
-        postulanteEntity.setDisponibilidadViajar(postulanteDto.getDisponibilidadViajar());
-        postulanteEntity.setExperienciaRubro(postulanteDto.getExperienciaRubro());
-        postulanteEntity.setFechaNacimiento(postulanteDto.getFechaNacimiento());
-        postulanteEntity.setDni(postulanteDto.getDni());
-        postulanteEntity.setFechaPostulacion(ConvertirFechas.getInstance().obtenerFechaActual());
-        postulanteEntity.setPrimerNombre(postulanteDto.getPrimerNombre());
-        postulanteEntity.setSegundoNombre(postulanteDto.getSegundoNombre());
-        //postulanteEntity.setSubEstadoPostulacion(postulanteDto.getSubEstadoPostulacion());
-        postulanteEntity.setTrabajoReciente(postulanteDto.getTrabajoReciente());
-        postulanteEntity.setLugarEstudios(postulanteDto.getLugarEstudios());
-        postulanteEntity.setProfesion(postulanteDto.getProfesion());
-        postulanteEntity.setUltimoCursoRealizado(postulanteDto.getUltimoCursoRealizado());
-        postulanteEntity.setMotivoSalidaTrabajoReciente(postulanteDto.getMotivoSalidaTrabajoReciente());
-        postulanteEntity.setProcedencia(postulanteDto.getProcedencia());
-        postulanteEntity.setIdOferta(postulanteDto.getIdOferta());
+        if(postulanteRepository.existsByDniAndEstado(dni, Constantes.ESTADO_ACTIVO)){
+            return new Mensaje("Ya existe una postulación, solo puede postular una sola vez");
+        }
+
+        String nombreCurriculum = "";
+        String nombreDniFrontal = "";
+        String nombreDniPosterior = "";
+        String nombreFoto = "";
+        if(!curriculum.isEmpty()){
+            nombreCurriculum = dni+Constantes.CURRICULUM+"."+FilenameUtils.getExtension(curriculum.getOriginalFilename());
+            guardarArchivos.guardarArchivo(curriculum, nombreCurriculum);
+        }
+        if(!dniFrontal.isEmpty()){
+            nombreDniFrontal = dni+Constantes.DNI_FRONTAL+"."+FilenameUtils.getExtension(dniFrontal.getOriginalFilename());
+            guardarArchivos.guardarArchivo(dniFrontal, nombreDniFrontal);
+        }
+        if(!dniPosterior.isEmpty()){
+            nombreDniPosterior = dni+Constantes.DNI_POSTERIOR+"."+FilenameUtils.getExtension(dniPosterior.getOriginalFilename());
+            guardarArchivos.guardarArchivo(dniPosterior, nombreDniPosterior);
+        }
+        if(!foto.isEmpty()){
+            nombreFoto = dni+Constantes.FOTO+"."+FilenameUtils.getExtension(foto.getOriginalFilename());
+            guardarArchivos.guardarArchivo(foto, nombreFoto);
+        }
+
+        PostulanteEntity postulanteEntity = PostulanteMapper.INSTANCE.toPostulanteEntity(postulanteDto);
+        postulanteEntity.setFechaPostulacion(ConvertirFechas.getInstance().obtenerFecha(new java.util.Date()));
+        postulanteEntity.setCurriculum(nombreCurriculum);
+        postulanteEntity.setDniFrontal(nombreDniFrontal);
+        postulanteEntity.setDniPosterior(nombreDniPosterior);
+        postulanteEntity.setFoto(nombreFoto);
 
         Optional<OfertaEntity> ofertaOp = ofertaRepository.findByIdAndEstado(postulanteDto.getIdOferta(), Constantes.ESTADO_ACTIVO);
         if(ofertaOp.isEmpty()){
             return new Mensaje("No existe la oferta");
         }
         OfertaEntity ofertaDb = ofertaOp.get();
+        ofertaDb.setCantidadPostulantes(ofertaDb.getCantidadPostulantes() + 1);
         postulanteEntity.setOfertaPostulada(ofertaDb.getTitulo());
-        //postulanteEntity.setCantidadPostulaciones(postulanteDto.getCantidadPostulaciones());
-        //postulanteEntity.setResponsableAsignado(postulanteDto.getResponsableAsignado());
+
+        int anioActual = ConvertirFechas.getInstance().obtenerAnioMesDia(Calendar.YEAR);
+        int mesActual = ConvertirFechas.getInstance().obtenerAnioMesDia(Calendar.MONTH);
+        int diaActual = ConvertirFechas.getInstance().obtenerAnioMesDia(Calendar.DAY_OF_MONTH);
+
+        int anioNac = ConvertirFechas.getInstance().obtenerAnioMesDia(Calendar.YEAR, postulanteEntity.getFechaNacimiento());
+        int mesNac = ConvertirFechas.getInstance().obtenerAnioMesDia(Calendar.MONTH,postulanteEntity.getFechaNacimiento());
+        int diaNac = ConvertirFechas.getInstance().obtenerAnioMesDia(Calendar.DAY_OF_MONTH,postulanteEntity.getFechaNacimiento());
+
+        String mensaje = "";
+        String asunto = "Postulación a " + ofertaDb.getTitulo() + " - Technotankers";
+        boolean verificarEdad = false;
+        int edad = anioActual - anioNac;
+        if(ofertaDb.getCargoOferta().getNombreCargo().equalsIgnoreCase(Constantes.CARGO_TECNICO) ||
+            ofertaDb.getCargoOferta().getNombreCargo().equalsIgnoreCase(Constantes.CARGO_SUPERVISOR)){
+            postulanteEntity.setProcedencia(Constantes.PROC_MILITAR);
+            if(anioActual - anioNac == Constantes.EDAD_TECNICO_SUPERVISOR){
+                if(mesActual == mesNac && diaActual >= diaNac) verificarEdad = true;
+                if(mesActual > mesNac) verificarEdad = true;
+                edad = Constantes.EDAD_TECNICO_SUPERVISOR;
+            }
+            if(anioActual - anioNac < Constantes.EDAD_TECNICO_SUPERVISOR ||
+                    anioActual - anioNac > Constantes.EDAD_TECNICO_SUPERVISOR) verificarEdad = false;
+        }
+        else if(ofertaDb.getCargoOferta().getNombreCargo().equalsIgnoreCase(Constantes.CARGO_OPERARIO)){
+            postulanteEntity.setProcedencia(Constantes.PROC_CIVIL);
+            if(anioActual - anioNac == Constantes.EDAD_OPERARIO){
+                if(mesActual == mesNac && diaActual >= diaNac) verificarEdad = true;
+                if(mesActual > mesNac) verificarEdad = true;
+                edad = Constantes.EDAD_OPERARIO;
+            }
+            if(anioActual - anioNac < Constantes.EDAD_OPERARIO || anioActual - anioNac > Constantes.EDAD_OPERARIO) verificarEdad = false;
+        }
+        if(verificarEdad){
+            mensaje = Constantes.MENSAJE_CUMPLE_EDAD;
+        }else{
+            mensaje = Constantes.MENSAJE_NO_CUMPLE_EDAD;
+        }
+
+        postulanteEntity.setEstadoPostulacion(Constantes.ESTADO_EVALUACION_INGRESADO);
         postulanteEntity.setEstado(Constantes.ESTADO_ACTIVO);
 
-        postulanteRepository.save(postulanteEntity);
+        ofertaRepository.save(ofertaDb);
+        postulanteEntity = postulanteRepository.save(postulanteEntity);
+        registrarHistorial(postulanteEntity, edad, mensaje);
+
+        emailService.enviarEmailPostulante(postulanteDto.getEmail(), mensaje, asunto, postulanteDto.getPrimerNombre());
         return new Mensaje("Postulante registrado correctamente");
     }
 
@@ -193,4 +234,32 @@ public class PostulanteServiceImpl implements PostulanteService {
     public Optional<PostulanteEntity> getOne(int id) {
         return postulanteRepository.findById(id);
     }
+
+    @Override
+    public Page<PostulanteDto> listarPostulantes(Integer numPagina, Integer tamPagina) {
+        Pageable pageable = PageRequest.of(numPagina, tamPagina);
+        List<PostulanteEntity> lista = postulanteRepository.findByEstado(Constantes.ESTADO_ACTIVO, pageable);
+        List<PostulanteDto> listaPostulante = lista.stream().map(PostulanteMapper.INSTANCE::toPostulante).collect(Collectors.toList());
+        if(!listaPostulante.isEmpty()){
+            return new PageImpl<>(listaPostulante, pageable, lista.size());
+        }
+
+        return null;
+    }
+
+    private void registrarHistorial(PostulanteEntity postulanteEntity, Integer edad, String mensaje){
+        HistorialEntity historialEntity = new HistorialEntity();
+        historialEntity.setIdPostulante(postulanteEntity.getId());
+        historialEntity.setPrimerNombre(postulanteEntity.getPrimerNombre());
+        historialEntity.setSegundoNombre(postulanteEntity.getSegundoNombre());
+        historialEntity.setApellidoPaterno(postulanteEntity.getApellidoPaterno());
+        historialEntity.setApellidoMaterno(postulanteEntity.getApellidoMaterno());
+        historialEntity.setFechaCambioEstado(ConvertirFechas.getInstance().obtenerFecha(new java.util.Date()));
+        historialEntity.setEstadoPostulacion(postulanteEntity.getEstadoPostulacion());
+        historialEntity.setCantidadPostulaciones(1);
+        historialEntity.setMensajeEnviado(mensaje);
+        historialEntity.setEdadPostulante(edad);
+        historialRepository.save(historialEntity);
+    }
+
 }

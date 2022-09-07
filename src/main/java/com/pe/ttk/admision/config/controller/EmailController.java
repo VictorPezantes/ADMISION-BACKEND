@@ -26,7 +26,7 @@ import com.pe.ttk.admision.security.service.impl.UsuarioServiceImpl;
 import com.pe.ttk.admision.security.service.impl.EmailServiceImpl;
 
 @RestController
-@RequestMapping("/email-password")
+@RequestMapping("/api/v1/email-service")
 @CrossOrigin(origins = "http://localhost:4200")
 public class EmailController {
 
@@ -41,21 +41,18 @@ public class EmailController {
 	@Value("${spring.mail.username}")
 	private String mailFrom;
 
-	private static final String mailSubject = "Cambio de Contraseña";
-
-	@PostMapping("/send/email")
+	@PostMapping("/enviar-cambio-password")
 	public ResponseEntity<?> sendEmailTemplate(@RequestBody EmailValuesDto dto) {
 
 		Optional<Usuario> usuarioOpt = usuarioService.getByNombreUsuarioOrEmail(dto.getMailTo());
-		if (!usuarioOpt.isPresent())
-			return new ResponseEntity(new Mensaje("No existe ningún usuario con esas credenciales"),
-					(HttpStatus.NOT_FOUND));
+		if (usuarioOpt.isEmpty())
+			return ResponseEntity.badRequest().body(new Mensaje("No existe ningún usuario con esas credenciales"));
 
 		Usuario usuario = usuarioOpt.get();
 
 		dto.setMailFrom(mailFrom);
 		dto.setMailTo(usuario.getEmail());
-		dto.setSubject(mailSubject);
+		dto.setSubject("Cambio de Contraseña");
 		dto.setUserName(usuario.getNombre());
 		UUID uuid = UUID.randomUUID();
 		String tokenPassword = uuid.toString();
@@ -63,22 +60,21 @@ public class EmailController {
 		usuario.setTokenPassword(tokenPassword);
 		usuarioService.save(usuario);
 		emailServiceImpl.sendMailTemplate(dto);
-		return new ResponseEntity(new Mensaje("correo enviado con éxito"), HttpStatus.OK);
+		return ResponseEntity.ok(new Mensaje("correo para recuperar contraseña enviado correctamente"));
 	}
 
-	@PostMapping("/change-password")
+	@PostMapping("/cambiar-password")
 	public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordDto dto, BindingResult bindingResult) {
 
 		if (bindingResult.hasErrors())
-			return new ResponseEntity(new Mensaje("Campos mal ingresados"), (HttpStatus.BAD_REQUEST));
+			return ResponseEntity.badRequest().body(new Mensaje("Campos mal ingresados"));
 
 		if (!dto.getPassword().equals(dto.getConfirmPassword()))
-			return new ResponseEntity(new Mensaje("Las Contraseñas no coinciden"), (HttpStatus.BAD_REQUEST));
+			return ResponseEntity.badRequest().body(new Mensaje("Las Contraseñas no coinciden"));
 
 		Optional<Usuario> usuarioOpt = usuarioService.getByTokenPassword(dto.getTokenPassword());
-		if (!usuarioOpt.isPresent())
-			return new ResponseEntity(new Mensaje("No existe ningún usuario con esas credenciales"),
-					(HttpStatus.BAD_REQUEST));
+		if (usuarioOpt.isEmpty())
+			return ResponseEntity.badRequest().body(new Mensaje("No existe usuario para recuperar contraseña"));
 
 		Usuario usuario = usuarioOpt.get();
 
@@ -87,7 +83,7 @@ public class EmailController {
 		usuario.setTokenPassword(null);
 		usuarioService.save(usuario);
 
-		return new ResponseEntity(new Mensaje("contraseña actualizada"), (HttpStatus.OK));
+		return ResponseEntity.ok(new Mensaje("Contraseña actualizada correctamente"));
 
 	}
 

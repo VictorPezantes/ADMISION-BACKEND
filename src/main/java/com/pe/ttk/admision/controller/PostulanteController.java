@@ -1,9 +1,13 @@
 package com.pe.ttk.admision.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 import com.pe.ttk.admision.dto.Mensaje;
 import com.pe.ttk.admision.dto.PostulanteDto;
 import com.pe.ttk.admision.dto.entity.admision.PostulanteEntity;
 import com.pe.ttk.admision.exceptions.TTKDataException;
+import com.pe.ttk.admision.service.PostulanteService;
 import com.pe.ttk.admision.service.impl.PostulanteServiceImpl;
 import com.pe.ttk.admision.util.FilterParam;
 import com.pe.ttk.admision.util.PaginationUtils;
@@ -12,14 +16,19 @@ import com.pe.ttk.admision.util.input.data.PostulanteFindInputData;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 @RestController
@@ -28,16 +37,14 @@ import java.util.List;
 public class PostulanteController {
 
     @Autowired
-    PostulanteServiceImpl postulanteService;
+    PostulanteService postulanteService;
 
     @ApiOperation("Lista todos los postulantes")
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/listar-postulantes")
-    public String listarPostulantes(@RequestParam(value = "numpagina") Integer page,
-                                    @RequestParam(value = "size") Integer size,
-                                    Model model) {
-        List<PostulanteEntity> listaPostulanteEntities = postulanteService.list();
-        return PaginationUtils.getPaginationedResults(listaPostulanteEntities, page, size, model);
+    @GetMapping("/listar")
+    public ResponseEntity<?> listarPostulantes(@RequestParam(defaultValue = "0") Integer numPagina,
+                                    @RequestParam(defaultValue = "10") Integer tamPagina) {
+        return ResponseEntity.ok(postulanteService.listarPostulantes(numPagina, tamPagina));
     }
 
     @ApiOperation("Lista filtrada por datos del postulante")
@@ -57,17 +64,19 @@ public class PostulanteController {
     }
 
     @ApiOperation("Registrar un nuevo postulante")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('USER')")
     @PostMapping("/registrar")
     public ResponseEntity<?> registrarPostulante(@RequestParam(name = "curriculum", required = false) MultipartFile curriculum,
-                                                 @RequestParam(name = "dniFrontal", required = false) MultipartFile dnifrontal,
+                                                 @RequestParam(name = "dniFrontal", required = false) MultipartFile dniFrontal,
+                                                 @RequestParam(name = "dniPosterior", required = false) MultipartFile dniPosterior,
                                                  @RequestParam(name = "foto", required = false) MultipartFile foto,
-                                                 @RequestParam(name = "dniPosterior", required = false) MultipartFile dniposterior,
-                                                 @Valid @RequestBody PostulanteDto postulanteDto, BindingResult bindingResult) {
-        if (bindingResult.hasErrors())
-            return ResponseEntity.badRequest().body(new Mensaje("Por favor ingrese los campos correctamente"));
+                                                 @RequestParam String postulante) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        PostulanteDto postulanteDto = objectMapper.readValue(postulante, PostulanteDto.class);
+        /*if (bindingResult.hasErrors())
+            return ResponseEntity.badRequest().body(new Mensaje("Por favor ingrese los campos correctamente"));*/
         return ResponseEntity.status(HttpStatus.CREATED).body(postulanteService.registrarPostulante(postulanteDto, curriculum,
-                dnifrontal, dniposterior, foto));
+                dniFrontal, dniPosterior, foto));
     }
 
     @ApiOperation("Actualizar distintos campos de un postulante")
