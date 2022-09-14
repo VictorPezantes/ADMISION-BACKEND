@@ -1,8 +1,6 @@
 package com.pe.ttk.admision.util;
 
-import com.pe.ttk.admision.security.entity.Rol;
-import com.pe.ttk.admision.security.enums.RolNombre;
-import com.pe.ttk.admision.security.service.RolService;
+import com.pe.ttk.admision.util.mapper.security.service.RolService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;

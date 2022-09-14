@@ -8,7 +8,7 @@ import com.pe.ttk.admision.dto.entity.master.HistorialEntity;
 import com.pe.ttk.admision.repository.HistorialRepository;
 import com.pe.ttk.admision.repository.OfertaRepository;
 import com.pe.ttk.admision.repository.PostulanteRepository;
-import com.pe.ttk.admision.security.service.EmailService;
+import com.pe.ttk.admision.util.mapper.security.service.EmailService;
 import com.pe.ttk.admision.service.PostulanteService;
 import com.pe.ttk.admision.util.Constantes;
 import com.pe.ttk.admision.util.ConvertirFechas;

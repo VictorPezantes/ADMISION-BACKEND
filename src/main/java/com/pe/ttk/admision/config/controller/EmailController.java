@@ -6,13 +6,12 @@ import java.util.UUID;
 import javax.validation.Valid;
 
 import com.pe.ttk.admision.dto.Mensaje;
-import com.pe.ttk.admision.security.dto.ChangePasswordDto;
-import com.pe.ttk.admision.security.dto.EmailValuesDto;
-import com.pe.ttk.admision.security.entity.Usuario;
-import com.pe.ttk.admision.security.service.UsuarioService;
+import com.pe.ttk.admision.util.mapper.security.dto.ChangePasswordDto;
+import com.pe.ttk.admision.util.mapper.security.dto.EmailValuesDto;
+import com.pe.ttk.admision.util.mapper.security.entity.Usuario;
+import com.pe.ttk.admision.util.mapper.security.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
@@ -22,8 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.pe.ttk.admision.security.service.impl.UsuarioServiceImpl;
-import com.pe.ttk.admision.security.service.impl.EmailServiceImpl;
+import com.pe.ttk.admision.util.mapper.security.service.impl.EmailServiceImpl;
 
 @RestController
 @RequestMapping("/api/v1/email-service")

@@ -1,7 +1,7 @@
 package com.pe.ttk.admision.util.mapper;
 
-import com.pe.ttk.admision.security.dto.UsuarioDto;
-import com.pe.ttk.admision.security.entity.Usuario;
+import com.pe.ttk.admision.util.mapper.security.dto.UsuarioDto;
+import com.pe.ttk.admision.util.mapper.security.entity.Usuario;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 
