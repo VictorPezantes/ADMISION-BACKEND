@@ -44,7 +44,7 @@ public class EmailController {
 	public ResponseEntity<?> sendEmailTemplate(@RequestBody EmailValuesDto dto) {
 
 		Optional<Usuario> usuarioOpt = usuarioService.getByNombreUsuarioOrEmail(dto.getMailTo());
-		if (usuarioOpt.isEmpty())
+		if (usuarioOpt==null)
 			return ResponseEntity.badRequest().body(new Mensaje("No existe ningún usuario con esas credenciales"));
 
 		Usuario usuario = usuarioOpt.get();
@@ -72,7 +72,7 @@ public class EmailController {
 			return ResponseEntity.badRequest().body(new Mensaje("Las Contraseñas no coinciden"));
 
 		Optional<Usuario> usuarioOpt = usuarioService.getByTokenPassword(dto.getTokenPassword());
-		if (usuarioOpt.isEmpty())
+		if (usuarioOpt==null)
 			return ResponseEntity.badRequest().body(new Mensaje("No existe usuario para recuperar contraseña"));
 
 		Usuario usuario = usuarioOpt.get();

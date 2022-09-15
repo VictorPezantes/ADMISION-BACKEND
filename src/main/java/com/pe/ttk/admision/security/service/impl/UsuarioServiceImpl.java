@@ -159,6 +159,7 @@ public class UsuarioServiceImpl implements UsuarioService {
 		usuario.setRoles(roles);
 		usuario.setEstado(Constantes.ESTADO_ACTIVO);
 
+
 		if(!foto.isEmpty()){
 			String nombreFoto = usuario.getNombreUsuario()+Constantes.AVATAR+"."+ FilenameUtils.getExtension(foto.getOriginalFilename());
 			guardarArchivos.guardarArchivo(foto, nombreFoto, "archivos/Empleado");

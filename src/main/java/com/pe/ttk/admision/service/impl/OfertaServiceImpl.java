@@ -87,7 +87,7 @@ public class OfertaServiceImpl implements OfertaService {
         String emailEncargado = usuario.getEmail();
 
         Optional<Encargado> encargadoOp = encargadoRepository.findByEmail(emailEncargado);
-        if(encargadoOp.isEmpty()){
+        if(encargadoOp==null){
             return new Mensaje(("No existe el encargado"));
         }
         Encargado encargadoDb = encargadoOp.get();
@@ -120,7 +120,7 @@ public class OfertaServiceImpl implements OfertaService {
         if(ofertaOp.isPresent()){
             Long idCargo = ofertaDto.getCargoOferta().getId();
             Optional<Cargo> cargoOp = cargoRepository.findByIdAndEstado(idCargo, Constantes.ESTADO_ACTIVO);
-            if(cargoOp.isEmpty()){
+            if(cargoOp==null){
                 return new Mensaje("El cargo no existe");
             }
 
@@ -150,7 +150,7 @@ public class OfertaServiceImpl implements OfertaService {
             OfertaEntity ofertaDb = ofertaOp.get();
             Long idEstado = ofertaDto.getEstadoOferta().getId();
             Optional<Estado> estadoOp = estadoRepository.findById(idEstado);
-            if(estadoOp.isEmpty()){
+            if(estadoOp==null){
                 return new Mensaje("No existe el estado");
             }
             Estado estadoDb = estadoOp.get();
