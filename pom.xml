@@ -17,6 +17,7 @@
 
 	<properties>
 		<java.version>11</java.version>
+		<jmapper.version>1.6.1.CR2</jmapper.version>
 	</properties>
 
 	<dependencies>
@@ -27,6 +28,13 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+
+		<!-- https://www.baeldung.com/java-performance-mapping-frameworks -->
+		<dependency>
+			<groupId>com.googlecode.jmapper-framework</groupId>
+			<artifactId>jmapper-core</artifactId>
+			<version>${jmapper.version}</version>
 		</dependency>
 
 		<dependency>

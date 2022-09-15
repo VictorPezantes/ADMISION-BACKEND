@@ -1,7 +1,7 @@
 package com.pe.ttk.admision.util.mapper;
 
-import com.pe.ttk.admision.util.mapper.security.dto.UsuarioDto;
-import com.pe.ttk.admision.util.mapper.security.entity.Usuario;
+import com.pe.ttk.admision.security.dto.UsuarioDto;
+import com.pe.ttk.admision.security.entity.Usuario;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 
@@ -14,6 +14,6 @@ public interface UsuarioMapper {
 
     UsuarioDto toUsuarioDto(Usuario usuario);
 
-    List<UsuarioDto> toUsuarioDto(List<Usuario> usuarios);
+    List<UsuarioDto> toUsuarioDtoList(List<Usuario> usuarios);
 
 }

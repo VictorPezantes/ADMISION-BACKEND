@@ -1,5 +1,7 @@
 package com.pe.ttk.admision.security.entity;
 
+import com.googlecode.jmapper.JMapper;
+import com.pe.ttk.admision.security.dto.UsuarioDto;
 import lombok.Data;
 
 import java.util.HashSet;
@@ -50,6 +52,9 @@ public class Usuario {
 
 	public Usuario() {
 		
+	}public UsuarioDto toUsuarioDto() throws ClassCastException {
+		return new JMapper<>(UsuarioDto.class, Usuario.class)
+				.getDestination(this);
 	}
 
 }

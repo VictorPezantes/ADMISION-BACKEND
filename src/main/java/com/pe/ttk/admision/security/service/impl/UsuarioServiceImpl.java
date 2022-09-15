@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.pe.ttk.admision.dto.Mensaje;
 import com.pe.ttk.admision.security.dto.NuevoUsuario;
@@ -89,19 +90,24 @@ public class UsuarioServiceImpl implements UsuarioService {
 
 	@Override
 	public List<UsuarioDto> listarUsuariosActivos(){
-		return UsuarioMapper.INSTANCE.toUsuarioDto(usuarioRepository.findByEstado(Constantes.ESTADO_ACTIVO));
+		//return UsuarioMapper.INSTANCE.toUsuarioDto(usuarioRepository.findByEstado(Constantes.ESTADO_ACTIVO));
+		return this.usuarioRepository.findByEstado(Constantes.ESTADO_ACTIVO).stream().map(Usuario ::toUsuarioDto).collect(Collectors.toList());
 	}
 
 	@Override
 	public UsuarioDto obtenerUsuarioLogueado(Authentication auth){
 		UsuarioPrincipal usuario = (UsuarioPrincipal) auth.getPrincipal();
 
-		Optional<Usuario> usuarioOp = getByNombreUsuarioOrEmail(usuario.getEmail());
+		 return this.usuarioRepository.findByNombreUsuarioOrEmail(usuario.getEmail(), usuario.getEmail())
+				.orElseThrow(()->new RuntimeException("Usuario no existe. "+ usuario.getEmail())).toUsuarioDto();
+
+
+		/*Optional<Usuario> usuarioOp = getByNombreUsuarioOrEmail(usuario.getEmail());
 		if(usuarioOp.isPresent()){
 			Usuario usuarioDb = usuarioOp.get();
-			return UsuarioMapper.INSTANCE.toUsuarioDto(usuarioDb);
+			return Usuario::toUsuarioDto;
 		}
-		return null;
+		return null;*/
 	}
 
 	@Override

@@ -3,13 +3,13 @@ package com.pe.ttk.admision.config.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pe.ttk.admision.dto.Mensaje;
-import com.pe.ttk.admision.util.mapper.security.dto.JwtDto;
-import com.pe.ttk.admision.util.mapper.security.dto.LoginUsuario;
-import com.pe.ttk.admision.util.mapper.security.dto.NuevoUsuario;
-import com.pe.ttk.admision.util.mapper.security.dto.UsuarioDto;
-import com.pe.ttk.admision.util.mapper.security.entity.UsuarioPrincipal;
-import com.pe.ttk.admision.util.mapper.security.jwt.JwtProvider;
-import com.pe.ttk.admision.util.mapper.security.service.UsuarioService;
+import com.pe.ttk.admision.security.dto.JwtDto;
+import com.pe.ttk.admision.security.dto.LoginUsuario;
+import com.pe.ttk.admision.security.dto.NuevoUsuario;
+import com.pe.ttk.admision.security.dto.UsuarioDto;
+import com.pe.ttk.admision.security.entity.UsuarioPrincipal;
+import com.pe.ttk.admision.security.jwt.JwtProvider;
+import com.pe.ttk.admision.security.service.UsuarioService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,12 +19,20 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.ParseException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -40,16 +48,11 @@ public class AuthController {
 
     @ApiOperation("Registrar un usuario final")
     @PostMapping("/registrar-usuario")
-    public ResponseEntity<?> registrarUsuario(@RequestParam(name = "foto", required = false) MultipartFile foto,
-                                   @RequestParam String usuario) throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        NuevoUsuario nuevoUsuario = objectMapper.readValue(usuario, NuevoUsuario.class);
-
-        /*if (bindingResult.hasErrors())
-            return ResponseEntity.badRequest().body(new Mensaje("Por favor ingrese los campos correctamente"));*/
-
+    public ResponseEntity<?> registrarUsuario(@RequestParam(name = "foto", required = false)MultipartFile foto,
+                                              @Valid NuevoUsuario nuevoUsuario)  {
         return ResponseEntity.status(HttpStatus.CREATED).body(usuarioService.registrarUsuario(nuevoUsuario, false, foto));
     }
+
 
     @ApiOperation("Registrar un usuario administrador")
     @PreAuthorize("hasRole('ADMIN')")
@@ -61,7 +64,7 @@ public class AuthController {
         /*if (bindingResult.hasErrors())
             return ResponseEntity.badRequest().body(new Mensaje("Por favor ingrese los campos correctamente"));*/
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(usuarioService.registrarUsuario(nuevoUsuario, true, foto));
+        return ResponseEntity.status(HttpStatus.CREATED).body(usuarioService.registrarUsuario(nuevoUsuario, true, null));
     }
 
     @ApiOperation("Login del sistema")
